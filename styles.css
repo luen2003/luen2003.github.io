@@ -1,7 +1,5 @@
 .pagination {
   display: inline-block;
-  
-
 }
 
 .pagination a {
@@ -68,6 +66,7 @@ body {
 /* Left and right column */
 .column.side {
   width: 25%;
+  height: 500px;
   display: flex;
   flex-direction: column;
   padding: 5px;
