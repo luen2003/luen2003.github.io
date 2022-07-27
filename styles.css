@@ -69,7 +69,9 @@ body {
   height: 500px;
   display: flex;
   flex-direction: column;
+  line-height: 25px;
   padding: 5px;
+  background-color: rgb(244, 241, 239);
 }
 
 /* Middle column */
