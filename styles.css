@@ -70,7 +70,6 @@ body {
 
 /* Left column */
 .column.side {
-  padding-left: 20px;
   width: 25%;
   height: 500px;
   display: flex;
