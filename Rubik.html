@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Rubik's Cube</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x808080); // Set background to grey
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create a Rubik's Cube
+        function createRubiksCube() {
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0xff0000 }), // Red
+                new THREE.MeshBasicMaterial({ color: 0x00ff00 }), // Green
+                new THREE.MeshBasicMaterial({ color: 0x0000ff }), // Blue
+                new THREE.MeshBasicMaterial({ color: 0xffff00 }), // Yellow
+                new THREE.MeshBasicMaterial({ color: 0xffa500 }), // Orange
+                new THREE.MeshBasicMaterial({ color: 0xffffff })  // White
+            ];
+
+            const cube = new THREE.Mesh(geometry, materials);
+            return cube;
+        }
+
+        const rubiksCube = createRubiksCube();
+        scene.add(rubiksCube);
+
+        camera.position.z = 3;
+
+        // Mouse movement variables
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // Update mouse coordinates on mouse move
+        window.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1; // Normalize to -1 to 1
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1; // Normalize to -1 to 1
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate Rubik's Cube based on mouse position
+            rubiksCube.rotation.x = mouseY * Math.PI; // Rotate along x-axis
+            rubiksCube.rotation.y = mouseX * Math.PI; // Rotate along y-axis
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
