@@ -14,7 +14,7 @@
     <script>
         // Scene setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x808080); // Set background to grey
+        scene.background = new THREE.Color(0x808080);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -44,20 +44,49 @@
         // Mouse movement variables
         let mouseX = 0;
         let mouseY = 0;
+        let isTouching = false;
+        let lastTouchX = 0;
+        let lastTouchY = 0;
 
         // Update mouse coordinates on mouse move
         window.addEventListener('mousemove', (event) => {
-            mouseX = (event.clientX / window.innerWidth) * 2 - 1; // Normalize to -1 to 1
-            mouseY = -(event.clientY / window.innerHeight) * 2 + 1; // Normalize to -1 to 1
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // Handle touch start
+        window.addEventListener('touchstart', (event) => {
+            isTouching = true;
+            lastTouchX = event.touches[0].clientX;
+            lastTouchY = event.touches[0].clientY;
+        });
+
+        // Handle touch move
+        window.addEventListener('touchmove', (event) => {
+            if (isTouching) {
+                const deltaX = event.touches[0].clientX - lastTouchX;
+                const deltaY = event.touches[0].clientY - lastTouchY;
+
+                mouseX += deltaX * 0.005; // Adjust sensitivity
+                mouseY -= deltaY * 0.005; // Adjust sensitivity
+
+                lastTouchX = event.touches[0].clientX;
+                lastTouchY = event.touches[0].clientY;
+            }
+        });
+
+        // Handle touch end
+        window.addEventListener('touchend', () => {
+            isTouching = false;
         });
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
 
-            // Rotate Rubik's Cube based on mouse position
-            rubiksCube.rotation.x = mouseY * Math.PI; // Rotate along x-axis
-            rubiksCube.rotation.y = mouseX * Math.PI; // Rotate along y-axis
+            // Rotate Rubik's Cube based on mouse/touch position
+            rubiksCube.rotation.x = mouseY * Math.PI;
+            rubiksCube.rotation.y = mouseX * Math.PI;
 
             renderer.render(scene, camera);
         }
