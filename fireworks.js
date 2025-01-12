@@ -97,7 +97,7 @@ const store = {
   state: {
     // will be unpaused in init()
     paused: true,
-    soundEnabled: false,
+    soundEnabled: true,
     menuOpen: false,
     openHelpTopic: null,
     fullscreen: isFullscreen(),
@@ -2256,7 +2256,7 @@ function setLoadingStatus(status) {
 if (IS_HEADER) {
   init();
 } else {
-  setLoadingStatus("Fireworks Lighting ");
+  setLoadingStatus("Click On Screen To Enable Sound");
   setTimeout(() => {
     soundManager.preload().then(init, (reason) => {
       init();
