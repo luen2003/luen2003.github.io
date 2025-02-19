@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Neon Pac-Man Model</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <!-- Thêm CDN cho Three.js và GLTFLoader -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/controls/OrbitControls.js"></script>
+  </head>
+  <body>
+    <script>
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Tải mô hình 3D của Neon Pac-Man
+      var loader = new THREE.GLTFLoader();
+      var neon_pac_man; // Đổi tên biến thành neon_pac_man
+      loader.load(
+        "neon_pac-man.glb",
+        function (gltf) {
+          neon_pac_man = gltf.scene;
+
+          // Thay đổi kích thước của mô hình
+          neon_pac_man.scale.set(6, 6, 6); // Tăng kích thước mô hình
+
+          scene.add(neon_pac_man);
+        },
+        undefined,
+        function (error) {
+          console.error(error);
+        }
+      );
+
+      // Đặt camera
+      camera.position.z = 5;
+
+      // Điều khiển chuột để xoay mô hình
+      var mouseX = 0,
+        mouseY = 0;
+      document.addEventListener("mousemove", function (event) {
+        mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+        mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+      });
+
+      // Chức năng xoay mô hình cho thiết bị di động
+      var touchX = 0,
+        touchY = 0;
+      window.addEventListener("touchmove", function (event) {
+        touchX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        touchY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+      });
+
+      // Hàm cập nhật và render cảnh
+      function animate() {
+        requestAnimationFrame(animate);
+
+        if (neon_pac_man) {
+          // Điều chỉnh góc xoay của mô hình dựa trên chuột hoặc cảm biến cảm ứng
+          neon_pac_man.rotation.x = mouseY * Math.PI;
+          neon_pac_man.rotation.y = mouseX * Math.PI;
+
+          // Nếu trên thiết bị di động, sử dụng cảm biến cảm ứng
+          if (window.innerWidth <= 768) {
+            neon_pac_man.rotation.x = touchY * Math.PI;
+            neon_pac_man.rotation.y = touchX * Math.PI;
+          }
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      // Điều chỉnh kích thước canvas khi thay đổi kích thước cửa sổ
+      window.addEventListener("resize", function () {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      });
+    </script>
+  </body>
+</html>
