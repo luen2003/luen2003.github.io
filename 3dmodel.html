@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D Neon Pac-Man Model</title>
+    <title>3D Neon Sign Board Food Model</title>
     <style>
       body {
         margin: 0;
@@ -31,18 +31,17 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // Tải mô hình 3D của Neon Pac-Man
       var loader = new THREE.GLTFLoader();
-      var neon_pac_man; // Đổi tên biến thành neon_pac_man
+      var neon_sign_board_food;
       loader.load(
-        "neon_pac-man.glb",
+        "neon_sign_board_food.glb",
         function (gltf) {
-          neon_pac_man = gltf.scene;
+          neon_sign_board_food = gltf.scene;
 
           // Thay đổi kích thước của mô hình
-          neon_pac_man.scale.set(6, 6, 6); // Tăng kích thước mô hình
+          neon_sign_board_food.scale.set(0.1, 0.1, 0.1);
 
-          scene.add(neon_pac_man);
+          scene.add(neon_sign_board_food);
         },
         undefined,
         function (error) {
@@ -73,15 +72,15 @@
       function animate() {
         requestAnimationFrame(animate);
 
-        if (neon_pac_man) {
+        if (neon_sign_board_food) {
           // Điều chỉnh góc xoay của mô hình dựa trên chuột hoặc cảm biến cảm ứng
-          neon_pac_man.rotation.x = mouseY * Math.PI;
-          neon_pac_man.rotation.y = mouseX * Math.PI;
+          neon_sign_board_food.rotation.x = mouseY * Math.PI;
+          neon_sign_board_food.rotation.y = mouseX * Math.PI;
 
           // Nếu trên thiết bị di động, sử dụng cảm biến cảm ứng
           if (window.innerWidth <= 768) {
-            neon_pac_man.rotation.x = touchY * Math.PI;
-            neon_pac_man.rotation.y = touchX * Math.PI;
+            neon_sign_board_food.rotation.x = touchY * Math.PI;
+            neon_sign_board_food.rotation.y = touchX * Math.PI;
           }
         }
 
