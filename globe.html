@@ -118,9 +118,9 @@
 
 <body>
     <div id="fps-counter">FPS: 0</div>
-    <button id="debug-toggle">Debug Panel</button>
+    <button id="debug-toggle">Control Panel</button>
     <div id="debug-panel">
-        <h3>Debug Controls</h3>
+        <h3>Configuration Controls</h3>
 
         <div class="control-group">
             <h4>Globe Appearance</h4>
@@ -1128,8 +1128,8 @@
         window.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mouseup', onMouseUp);
         window.addEventListener('mouseleave', onMouseUp);
-        window.addEventListener('touchstart', onMouseDown, { passive: true });
-        window.addEventListener('touchmove', onMouseMove, { passive: true });
+        window.addEventListener('touchstart', onMouseDown);
+        window.addEventListener('touchmove', onMouseMove);
         window.addEventListener('touchend', onMouseUp);
         window.addEventListener('touchcancel', onMouseUp);
         // Handle window resize
