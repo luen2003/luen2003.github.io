@@ -1128,10 +1128,10 @@
         window.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mouseup', onMouseUp);
         window.addEventListener('mouseleave', onMouseUp);
-        window.addEventListener('touchstart', onMouseDown);
-        window.addEventListener('touchmove', onMouseMove);
-        window.addEventListener('touchend', onMouseUp);
-        window.addEventListener('touchcancel', onMouseUp);
+        window.addEventListener('touchstart', onMouseDown, { passive: true });
+        window.addEventListener('touchmove', onMouseMove, { passive: true });
+        window.addEventListener('touchend', onMouseUp, { passive: true });
+        window.addEventListener('touchcancel', onMouseUp, { passive: true });
         // Handle window resize
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
