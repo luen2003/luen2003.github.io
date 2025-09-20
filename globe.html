@@ -1122,16 +1122,56 @@
             // Reset cursor
             document.body.style.cursor = 'auto';
         }
+        // Handle touch start - start dragging
+        function onTouchStart(event) {
+            if (event.touches.length === 1) { // Only handle single touch
+                isDragging = true;
+                previousMousePosition = {
+                    x: event.touches[0].clientX,
+                    y: event.touches[0].clientY
+                };
+                document.body.style.cursor = 'grabbing';
+            }
+        }
+
+        // Handle touch move - dragging
+        function onTouchMove(event) {
+            if (event.touches.length === 1 && isDragging) { // Only handle single touch
+                const deltaX = event.touches[0].clientX - previousMousePosition.x;
+                const deltaY = event.touches[0].clientY - previousMousePosition.y;
+
+                globeRotation.y += deltaX * mouseRotationSpeed;
+                globeRotation.x += deltaY * mouseRotationSpeed;
+
+                // Limit vertical rotation to prevent flipping
+                globeRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globeRotation.x));
+
+                globeGroup.rotation.y = globeRotation.y;
+                globeGroup.rotation.x = globeRotation.x;
+
+                previousMousePosition = {
+                    x: event.touches[0].clientX,
+                    y: event.touches[0].clientY
+                };
+            }
+        }
+
+        // Handle touch end - stop dragging
+        function onTouchEnd() {
+            isDragging = false;
+            document.body.style.cursor = 'auto';
+        }
 
         // Add event listeners
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mouseup', onMouseUp);
         window.addEventListener('mouseleave', onMouseUp);
-        window.addEventListener('touchstart', onMouseDown, { passive: true });
-        window.addEventListener('touchmove', onMouseMove, { passive: true });
-        window.addEventListener('touchend', onMouseUp, { passive: true });
-        window.addEventListener('touchcancel', onMouseUp, { passive: true });
+        window.addEventListener('touchstart', onTouchStart, { passive: true });
+        window.addEventListener('touchmove', onTouchMove, { passive: true });
+        window.addEventListener('touchend', onTouchEnd, { passive: true });
+        window.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
         // Handle window resize
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
