@@ -2470,6 +2470,36 @@
         
         // Start FPS measurement
         requestAnimationFrame(updateFPS);
+        let isDragging1 = false;
+        let previousMousePosition1 = { x: 0, y: 0 };
+
+        renderer.domElement.addEventListener("mousedown", (event) => {
+            isDragging1 = true;
+            previousMousePosition1 = { x: event.clientX, y: event.clientY };
+        });
+
+        renderer.domElement.addEventListener("mousemove", (event) => {
+            if (!isDragging1) return;
+
+            const deltaMove = {
+            x: event.clientX - previousMousePosition1.x,
+            y: event.clientY - previousMousePosition1.y,
+            };
+
+            const rotationSpeed = 0.005;
+            globe.rotation.y += deltaMove.x * rotationSpeed;
+            globe.rotation.x += deltaMove.y * rotationSpeed;
+
+            previousMousePosition1 = { x: event.clientX, y: event.clientY };
+        });
+
+        renderer.domElement.addEventListener("mouseup", () => {
+            isDragging1 = false;
+        });
+
+        renderer.domElement.addEventListener("mouseleave", () => {
+            isDragging1 = false;
+        });
     </script>
 </body>
 </html>
