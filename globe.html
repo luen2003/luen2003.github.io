@@ -1128,7 +1128,10 @@
         window.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mouseup', onMouseUp);
         window.addEventListener('mouseleave', onMouseUp);
-
+        window.addEventListener('touchstart', onMouseDown, { passive: true });
+        window.addEventListener('touchmove', onMouseMove, { passive: true });
+        window.addEventListener('touchend', onMouseUp);
+        window.addEventListener('touchcancel', onMouseUp);
         // Handle window resize
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -2483,72 +2486,7 @@
 
         // Start FPS measurement
         requestAnimationFrame(updateFPS);
-        function startDrag(x, y) {
-            isDragging = true;
-            previousMousePosition = { x, y };
-            document.body.style.cursor = 'grabbing';
-        }
-
-        function moveDrag(x, y) {
-            if (!isDragging) return;
-
-            const deltaMove = {
-                x: x - previousMousePosition.x,
-                y: y - previousMousePosition.y,
-            };
-
-            const rotationSpeed = 0.005;
-            globeGroup.rotation.y += deltaMove.x * rotationSpeed;
-            globeGroup.rotation.x += deltaMove.y * rotationSpeed;
-
-            previousMousePosition = { x, y };
-        }
-
-        function endDrag() {
-            isDragging = false;
-            document.body.style.cursor = 'auto';
-        }
-
-        // --- Mouse events ---
-        function onMouseDown(event) {
-            if (event.button === 0) {
-                startDrag(event.clientX, event.clientY);
-            }
-        }
-        function onMouseMove(event) {
-            moveDrag(event.clientX, event.clientY);
-        }
-        function onMouseUp() {
-            endDrag();
-        }
-
-        // --- Touch events ---
-        function onTouchStart(event) {
-            if (event.touches.length === 1) {
-                startDrag(event.touches[0].clientX, event.touches[0].clientY);
-            }
-        }
-        function onTouchMove(event) {
-            if (event.touches.length === 1) {
-                moveDrag(event.touches[0].clientX, event.touches[0].clientY);
-            }
-        }
-        function onTouchEnd() {
-            endDrag();
-        }
-
-        // Add event listeners
-        window.addEventListener('mousedown', onMouseDown);
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-        window.addEventListener('mouseleave', onMouseUp);
-
-        window.addEventListener('touchstart', onTouchStart, { passive: true });
-        window.addEventListener('touchmove', onTouchMove, { passive: true });
-        window.addEventListener('touchend', onTouchEnd);
-        window.addEventListener('touchcancel', onTouchEnd);
     </script>
-
 
 </body>
 
