@@ -2473,32 +2473,70 @@
         let isDragging1 = false;
         let previousMousePosition1 = { x: 0, y: 0 };
 
+        // --- PC (mouse) ---
         renderer.domElement.addEventListener("mousedown", (event) => {
-            isDragging1 = true;
-            previousMousePosition1 = { x: event.clientX, y: event.clientY };
+        isDragging1 = true;
+        previousMousePosition1 = { x: event.clientX, y: event.clientY };
         });
 
         renderer.domElement.addEventListener("mousemove", (event) => {
-            if (!isDragging1) return;
+        if (!isDragging1) return;
 
-            const deltaMove = {
+        const deltaMove = {
             x: event.clientX - previousMousePosition1.x,
             y: event.clientY - previousMousePosition1.y,
-            };
+        };
 
-            const rotationSpeed = 0.005;
-            globe.rotation.y += deltaMove.x * rotationSpeed;
-            globe.rotation.x += deltaMove.y * rotationSpeed;
+        const rotationSpeed = 0.005;
+        globe.rotation.y += deltaMove.x * rotationSpeed;
+        globe.rotation.x += deltaMove.y * rotationSpeed;
 
-            previousMousePosition1 = { x: event.clientX, y: event.clientY };
+        previousMousePosition1 = { x: event.clientX, y: event.clientY };
         });
 
         renderer.domElement.addEventListener("mouseup", () => {
-            isDragging1 = false;
+        isDragging1 = false;
         });
 
         renderer.domElement.addEventListener("mouseleave", () => {
-            isDragging1 = false;
+        isDragging1 = false;
+        });
+
+        // --- Mobile (touch) ---
+        renderer.domElement.addEventListener("touchstart", (event) => {
+        if (event.touches.length === 1) {
+            isDragging1 = true;
+            previousMousePosition1 = { 
+            x: event.touches[0].clientX, 
+            y: event.touches[0].clientY 
+            };
+        }
+        });
+
+        renderer.domElement.addEventListener("touchmove", (event) => {
+        if (!isDragging1 || event.touches.length !== 1) return;
+
+        const deltaMove = {
+            x: event.touches[0].clientX - previousMousePosition1.x,
+            y: event.touches[0].clientY - previousMousePosition1.y,
+        };
+
+        const rotationSpeed = 0.005;
+        globe.rotation.y += deltaMove.x * rotationSpeed;
+        globe.rotation.x += deltaMove.y * rotationSpeed;
+
+        previousMousePosition1 = { 
+            x: event.touches[0].clientX, 
+            y: event.touches[0].clientY 
+        };
+        });
+
+        renderer.domElement.addEventListener("touchend", () => {
+        isDragging1 = false;
+        });
+
+        renderer.domElement.addEventListener("touchcancel", () => {
+        isDragging1 = false;
         });
     </script>
 </body>
