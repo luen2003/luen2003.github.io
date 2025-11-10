@@ -6,20 +6,17 @@ body {
   margin: 0;
 }
 
-/* Style the header */
 .header {
   background-color: #f1f1f1;
   padding: 20px;
   text-align: center;
 }
 
-/* Style the top navigation bar */
 .topnav {
   overflow: hidden;
   background-color: #333;
 }
 
-/* Style the topnav links */
 .topnav a {
   float: left;
   display: block;
@@ -29,14 +26,12 @@ body {
   text-decoration: none;
 }
 
-/* Change color on hover */
 .topnav a:hover {
   background-color: #ddd;
   color: black;
 }
 
 
-/* Clear floats after the columns */
 .row:after {
   content: "";
   display: table;
@@ -51,7 +46,6 @@ body {
 }
 
 
-/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 600px) {
 
   .column.side,
@@ -60,7 +54,6 @@ body {
   }
 }
 
-/* Style the footer */
 .footer {
   background-color: #f1f1f1;
   padding: 10px;
@@ -70,3 +63,15 @@ body {
 .center {
   text-align: center;
 }
+
+.footer-brand {
+  color: inherit;          
+  text-decoration: none;   
+  font-weight: bold;       
+}
+
+.footer-brand:hover {
+  color: #000;          
+  text-decoration: none;   
+}
+
