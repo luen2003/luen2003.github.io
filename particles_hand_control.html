@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Particles - Single Hand Control</title>
+    
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Canvas 3D chính */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* UI Control Panel */
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px; /* Chuyển sang trái để tránh camera */
+            z-index: 10;
+            background: rgba(40, 40, 40, 0.8); /* Màu tối hơn để dễ nhìn */
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 220px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            color: #00aaff;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        label { font-size: 14px; color: #ddd; }
+
+        input[type="color"] {
+            border: none; width: 40px; height: 40px;
+            cursor: pointer; background: none;
+        }
+
+        #status {
+            font-size: 14px; font-weight: bold;
+            text-align: center; margin-top: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .instruction {
+            font-size: 12px; color: #aaa;
+            text-align: center; line-height: 1.4;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 10px;
+        }
+
+        /* Khung hiển thị Camera feedback */
+        #camera-feed {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 240px;
+            height: 180px;
+            z-index: 100;
+            border-radius: 10px;
+            border: 2px solid rgba(0, 170, 255, 0.5);
+            overflow: hidden;
+            background: black;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        /* Video element thực tế bên trong khung camera */
+        .input_video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Lật ngược video để giống gương */
+        }
+
+        .loader {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00aaff; z-index: 20; font-size: 20px;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div id="loader" class="loader">Đang khởi động Camera & AI...</div>
+
+    <div id="ui-panel">
+        <h2>Điều Khiển 1 Tay</h2>
+        <div class="control-group">
+            <label>Màu hạt:</label>
+            <input type="color" id="colorPicker" value="#00aaff">
+        </div>
+        <div id="status" style="color: #ccc;">Đang tìm tay...</div>
+        <div class="instruction">
+            Giơ 1 tay trước camera:<br>
+            🖐 <b>Mở tay:</b> Bung hạt<br>
+            ✊ <b>Nắm tay:</b> Thu hạt
+        </div>
+    </div>
+
+    <div id="camera-feed">
+        <video class="input_video"></video>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script>
+        // --- 1. CẤU HÌNH THREE.JS (Đồ họa 3D) ---
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.002); // Sương mù nhẹ
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 50;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Tối ưu hiệu suất trên màn hình retina
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // --- TẠO HỆ THỐNG HẠT ---
+        const particleCount = 5000;
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const originalPositions = []; 
+
+        const radius = 12; // Bán kính hình cầu gốc
+
+        for (let i = 0; i < particleCount; i++) {
+            // Thuật toán Fibonacci Sphere để phân bố đều điểm trên mặt cầu
+            const phi = Math.acos(1 - 2 * (i + 0.5) / particleCount);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+
+            const x = radius * Math.cos(theta) * Math.sin(phi);
+            const y = radius * Math.sin(theta) * Math.sin(phi);
+            const z = radius * Math.cos(phi);
+            
+            // Thêm chút nhiễu để hạt trông tự nhiên hơn
+            const jitter = 0.3;
+            positions.push(x + (Math.random()-0.5)*jitter, y + (Math.random()-0.5)*jitter, z + (Math.random()-0.5)*jitter);
+            originalPositions.push(x, y, z);
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+        // Tạo texture hạt phát sáng
+        function getTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.3, 'rgba(255,255,255,0.6)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 64, 64);
+            return new THREE.Texture(canvas);
+        }
+        const tex = getTexture();
+        tex.needsUpdate = true;
+
+        const material = new THREE.PointsMaterial({
+            size: 1.2,
+            color: 0x00aaff,
+            map: tex,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        // --- Xử lý sự kiện UI ---
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            material.color.set(e.target.value);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        // --- 2. XỬ LÝ MEDIAPIPE HANDS & CỬ CHỈ ---
+        const videoElement = document.getElementsByClassName('input_video')[0];
+        const statusElement = document.getElementById('status');
+        const loader = document.getElementById('loader');
+
+        let targetExpansion = 1; // Mục tiêu mở rộng (1 = thu gọn, >1 = mở)
+        let currentExpansion = 1; // Giá trị hiện tại (để làm mượt)
+
+        // Hàm tính khoảng cách giữa 2 điểm landmark
+        function calculateDistance(point1, point2) {
+            const dx = point1.x - point2.x;
+            const dy = point1.y - point2.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function onResults(results) {
+            loader.style.display = 'none';
+
+            // Kiểm tra xem có phát hiện tay nào không
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0]; // Lấy tay đầu tiên
+
+                // --- THUẬT TOÁN PHÁT HIỆN NẮM/MỞ ---
+                // Ý tưởng: So sánh khoảng cách từ Cổ tay (0) đến các đầu ngón tay.
+                
+                // 1. Lấy mốc tham chiếu: Khoảng cách từ cổ tay (0) đến đốt ngón giữa (9)
+                // Mốc này dùng để chuẩn hóa kích thước tay (tay gần/xa camera)
+                const scaleRef = calculateDistance(landmarks[0], landmarks[9]);
+
+                // 2. Tính trung bình khoảng cách từ cổ tay đến 4 đầu ngón tay (trừ ngón cái)
+                // Các đầu ngón: Trỏ(8), Giữa(12), Nhẫn(16), Út(20)
+                const tips = [8, 12, 16, 20];
+                let totalTipDistance = 0;
+                tips.forEach(tipIdx => {
+                    totalTipDistance += calculateDistance(landmarks[0], landmarks[tipIdx]);
+                });
+                const avgTipDist = totalTipDistance / 4;
+
+                // 3. Tính tỷ lệ mở (Openness Ratio)
+                const opennessRatio = avgTipDist / scaleRef;
+
+                // 4. Xác định trạng thái dựa trên ngưỡng (Thresholds)
+                // Các ngưỡng này được tìm ra qua thử nghiệm thực tế
+                const OPEN_THRESHOLD = 1.5;  // Tỷ lệ > 1.5 là mở
+                const CLOSED_THRESHOLD = 1.3; // Tỷ lệ < 1.3 là nắm
+
+                if (opennessRatio > OPEN_THRESHOLD) {
+                    // Trạng thái: MỞ TAY -> Bung hạt
+                    targetExpansion = 6.0;
+                    statusElement.innerText = "🖐 Tay Mở - Bung Hạt";
+                    statusElement.style.color = "#00ff88";
+                } else if (opennessRatio < CLOSED_THRESHOLD) {
+                    // Trạng thái: NẮM TAY -> Thu hạt
+                    targetExpansion = 1.0;
+                    statusElement.innerText = "✊ Tay Nắm - Thu Hạt";
+                    statusElement.style.color = "#ffaa00";
+                } 
+                // Nếu ở giữa 2 ngưỡng, giữ nguyên trạng thái cũ để tránh nhấp nháy
+
+            } else {
+                statusElement.innerText = "Không tìm thấy tay...";
+                statusElement.style.color = "#ccc";
+                // Nếu mất dấu tay, từ từ thu về trạng thái nghỉ
+                targetExpansion = 1.0;
+            }
+        }
+
+        // Cấu hình MediaPipe
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({
+            maxNumHands: 1, // Chỉ cần 1 tay
+            modelComplexity: 1,
+            minDetectionConfidence: 0.6, // Tăng độ tin cậy lên một chút
+            minTrackingConfidence: 0.6
+        });
+        hands.onResults(onResults);
+
+        // Khởi động Camera
+        const cameraUtils = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({image: videoElement}); },
+            width: 320, // Giảm độ phân giải xử lý để tăng tốc
+            height: 240
+        });
+        cameraUtils.start();
+
+        // --- 3. VÒNG LẶP RENDER (ANIMATION LOOP) ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.001;
+
+            // Làm mượt chuyển động (Linear Interpolation - Lerp)
+            // Giá trị 0.08 càng nhỏ thì chuyển động càng chậm và mượt
+            currentExpansion += (targetExpansion - currentExpansion) * 0.08;
+
+            const positionsAttribute = particles.geometry.attributes.position;
+            const positionsArray = positionsAttribute.array;
+
+            // Xoay chậm toàn bộ khối hạt
+            particles.rotation.y = time * 0.1;
+            particles.rotation.z = time * 0.05;
+
+            for (let i = 0; i < particleCount; i++) {
+                const idx = i * 3;
+                const ox = originalPositions[idx];
+                const oy = originalPositions[idx+1];
+                const oz = originalPositions[idx+2];
+
+                // Hiệu ứng nhiễu (noise) khi bung ra để trông hỗn loạn hơn
+                // Khi currentExpansion gần 1 (thu gọn), noise gần bằng 0.
+                const noiseScale = (currentExpansion - 1) * 0.3;
+                const noiseX = Math.sin(time + i * 0.1) * noiseScale;
+                const noiseY = Math.cos(time + i * 0.2) * noiseScale;
+                const noiseZ = Math.sin(time + i * 0.3) * noiseScale;
+
+                // Cập nhật vị trí = vị trí gốc * hệ số mở rộng + nhiễu
+                positionsArray[idx]   = ox * currentExpansion + noiseX;
+                positionsArray[idx+1] = oy * currentExpansion + noiseY;
+                positionsArray[idx+2] = oz * currentExpansion + noiseZ;
+            }
+
+            positionsAttribute.needsUpdate = true; // Báo Three.js cập nhật GPU
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+    </script>
+</body>
+</html>
