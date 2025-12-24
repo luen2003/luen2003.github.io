@@ -3,13 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <title>Galaxy Love</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 html,body{
   margin:0;
   padding:0;
   overflow:hidden;
   background:#000;
+  /* Ngăn chặn hành vi mặc định như kéo để refresh trên mobile */
+  touch-action: none; 
 }
 canvas{display:block;}
 </style>
@@ -59,11 +61,10 @@ let rotX=0, rotY=0, zoom=1;
 const PERSPECTIVE = 900;
 
 /* =======================
-   INPUT
+   INPUT (PC - MOUSE/WHEEL)
 ======================= */
 addEventListener("wheel",e=>{
   zoom += e.deltaY * -0.0005;
-  // Cho phép zoom sâu hơn để thấy hiệu ứng chuyển ảnh
   zoom = Math.max(0.1,Math.min(6,zoom)); 
 });
 
@@ -77,6 +78,69 @@ addEventListener("mousemove",e=>{
   rotY += (e.clientX-px)*0.003;
   rotX += (e.clientY-py)*0.003;
   px=e.clientX; py=e.clientY;
+});
+
+/* =======================
+   INPUT (MOBILE - TOUCH)
+======================= */
+let lastTouchX = 0;
+let lastTouchY = 0;
+let initialPinchDistance = null;
+
+// Hàm tính khoảng cách giữa 2 ngón tay
+function getDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+canvas.addEventListener("touchstart", e => {
+    if (e.touches.length === 1) {
+        // 1 ngón: Bắt đầu xoay
+        dragging = true;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+        // 2 ngón: Bắt đầu zoom
+        dragging = false; // Tắt xoay để ưu tiên zoom
+        initialPinchDistance = getDistance(e.touches);
+    }
+}, { passive: false });
+
+canvas.addEventListener("touchmove", e => {
+    e.preventDefault(); // Ngăn cuộn trang
+
+    if (e.touches.length === 1 && dragging) {
+        // Xử lý xoay
+        const x = e.touches[0].clientX;
+        const y = e.touches[0].clientY;
+        const dx = x - lastTouchX;
+        const dy = y - lastTouchY;
+        
+        rotY += dx * 0.005; // Tăng tốc độ xoay một chút trên mobile cho mượt
+        rotX += dy * 0.005;
+        
+        lastTouchX = x;
+        lastTouchY = y;
+    } else if (e.touches.length === 2) {
+        // Xử lý zoom
+        const currentDistance = getDistance(e.touches);
+        if (initialPinchDistance) {
+            const diff = currentDistance - initialPinchDistance;
+            
+            // Điều chỉnh độ nhạy zoom
+            zoom += diff * 0.005; 
+            zoom = Math.max(0.1, Math.min(6, zoom));
+            
+            // Cập nhật khoảng cách để zoom mượt mà liên tục
+            initialPinchDistance = currentDistance;
+        }
+    }
+}, { passive: false });
+
+canvas.addEventListener("touchend", () => {
+    dragging = false;
+    initialPinchDistance = null;
 });
 
 /* =======================
@@ -116,7 +180,7 @@ for(let i=0;i<1500;i++){
     x: radius * Math.sin(phi) * Math.cos(theta),
     y: radius * Math.cos(phi),
     z: radius * Math.sin(phi) * Math.sin(theta),
-    size: rand(3, 6), // Kích thước hạt cơ bản
+    size: rand(3, 6),
     imgIndex: Math.floor(Math.random() * images.length)
   });
 }
@@ -160,22 +224,11 @@ function draw(){
     );
     const pr=project(r);
     
-    // Không vẽ hạt sau camera
     if(pr.s <= 0) return;
 
-    // Kích thước hiển thị
     const displaySize = p.size * pr.s;
-
-    // --- 1. Vẽ Hình Vuông Gradient (Xanh - Tím - Hồng) ---
-    // Chỉ vẽ khi chưa phóng quá to (để tránh bị đè lên ảnh hoặc làm nặng máy)
-    // Hoặc vẽ mờ đi khi ảnh xuất hiện
-    
-    // Ngưỡng phóng to để hiện ảnh là 2.5
     const imgThreshold = 2.5;
     
-    // Tính độ trong suốt của khối vuông:
-    // Khi pr.s < 2.5: Alpha = 1 (rõ nhất)
-    // Khi pr.s > 2.5: Alpha giảm dần về 0
     let squareAlpha = 1;
     if (pr.s > imgThreshold) {
         squareAlpha = Math.max(0, 1 - (pr.s - imgThreshold));
@@ -184,36 +237,25 @@ function draw(){
     if (squareAlpha > 0) {
         ctx.save();
         ctx.globalAlpha = squareAlpha;
-        
-        // Tạo gradient chéo cho hình vuông
         const grad = ctx.createLinearGradient(
-            pr.x - displaySize/2, 
-            pr.y - displaySize/2, 
-            pr.x + displaySize/2, 
-            pr.y + displaySize/2
+            pr.x - displaySize/2, pr.y - displaySize/2, 
+            pr.x + displaySize/2, pr.y + displaySize/2
         );
-        grad.addColorStop(0, "#00ffff");   // Xanh Cyan
-        grad.addColorStop(0.5, "#bd00ff"); // Tím
-        grad.addColorStop(1, "#ff0066");   // Hồng
+        grad.addColorStop(0, "#00ffff");
+        grad.addColorStop(0.5, "#bd00ff");
+        grad.addColorStop(1, "#ff0066");
 
         ctx.fillStyle = grad;
-        
-        // Vẽ hình vuông (fillRect)
         ctx.fillRect(
-            pr.x - displaySize/2, 
-            pr.y - displaySize/2, 
-            displaySize, 
-            displaySize
+            pr.x - displaySize/2, pr.y - displaySize/2, 
+            displaySize, displaySize
         );
         ctx.restore();
     }
 
-    // --- 2. Vẽ Ảnh (Chỉ khi phóng THẬT TO) ---
+    /* Vẽ Ảnh */
     if (pr.s > imgThreshold && images[p.imgIndex].complete) {
-        const imgSize = displaySize * 3; // Ảnh to hơn hạt một chút
-        
-        // Tính độ rõ của ảnh (Fade in)
-        // Từ 2.5 đến 3.5: Ảnh hiện dần từ 0 -> 1
+        const imgSize = displaySize * 3;
         let imgAlpha = (pr.s - imgThreshold);
         imgAlpha = Math.max(0, Math.min(1, imgAlpha)); 
 
@@ -224,8 +266,7 @@ function draw(){
                 images[p.imgIndex], 
                 pr.x - imgSize/2, 
                 pr.y - imgSize/2, 
-                imgSize, 
-                imgSize
+                imgSize, imgSize
             );
             ctx.restore();
         }
