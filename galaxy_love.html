@@ -29,9 +29,9 @@ let w,h,cx,cy;
 
 // Danh sách ảnh
 const imgUrls = [
-  "https://raw.githubusercontent.com/dluongta/React_App_Resume_Page/refs/heads/main/src/assets/luen_logo.png",
-  "https://raw.githubusercontent.com/dluongta/React_App_Resume_Page/refs/heads/main/src/assets/hexagon-main.png",
-  "https://raw.githubusercontent.com/dluongta/React_App_Resume_Page/refs/heads/main/src/assets/luen-1.jpg",
+  "luen_logo.png",
+  "hexagon-main.png",
+  "luen-1.jpg",
 ];
 const images = [];
 
@@ -56,7 +56,9 @@ const rand=(a,b)=>Math.random()*(b-a)+a;
 /* =======================
    CAMERA
 ======================= */
-let rotX=0, rotY=0, zoom=1;
+let rotX=0, rotY=0;
+// [THAY ĐỔI 1] Chỉnh zoom ban đầu nhỏ lại (0.4) để camera ở xa hơn
+let zoom=0.4; 
 const PERSPECTIVE = 900;
 
 /* =======================
@@ -86,7 +88,6 @@ let lastTouchX = 0;
 let lastTouchY = 0;
 let initialPinchDistance = null;
 
-// Hàm tính khoảng cách giữa 2 ngón tay
 function getDistance(touches) {
     const dx = touches[0].clientX - touches[1].clientX;
     const dy = touches[0].clientY - touches[1].clientY;
@@ -95,43 +96,34 @@ function getDistance(touches) {
 
 canvas.addEventListener("touchstart", e => {
     if (e.touches.length === 1) {
-        // 1 ngón: Bắt đầu xoay
         dragging = true;
         lastTouchX = e.touches[0].clientX;
         lastTouchY = e.touches[0].clientY;
     } else if (e.touches.length === 2) {
-        // 2 ngón: Bắt đầu zoom
-        dragging = false; // Tắt xoay để ưu tiên zoom
+        dragging = false;
         initialPinchDistance = getDistance(e.touches);
     }
 }, { passive: false });
 
 canvas.addEventListener("touchmove", e => {
-    e.preventDefault(); // Ngăn cuộn trang
-
+    e.preventDefault(); 
     if (e.touches.length === 1 && dragging) {
-        // Xử lý xoay
         const x = e.touches[0].clientX;
         const y = e.touches[0].clientY;
         const dx = x - lastTouchX;
         const dy = y - lastTouchY;
         
-        rotY += dx * 0.005; // Tăng tốc độ xoay một chút trên mobile cho mượt
+        rotY += dx * 0.005; 
         rotX += dy * 0.005;
         
         lastTouchX = x;
         lastTouchY = y;
     } else if (e.touches.length === 2) {
-        // Xử lý zoom
         const currentDistance = getDistance(e.touches);
         if (initialPinchDistance) {
             const diff = currentDistance - initialPinchDistance;
-            
-            // Điều chỉnh độ nhạy zoom
             zoom += diff * 0.005; 
             zoom = Math.max(0.1, Math.min(6, zoom));
-            
-            // Cập nhật khoảng cách để zoom mượt mà liên tục
             initialPinchDistance = currentDistance;
         }
     }
@@ -162,7 +154,7 @@ function project(p){
    STARS
 ======================= */
 const stars = Array.from({length:800},()=>( {
-  x:rand(-w*2,w*2), y:rand(-h*2,h*2), z:rand(-2000,2000),
+  x:rand(-w*3,w*3), y:rand(-h*3,h*3), z:rand(-3000,3000), // Mở rộng vùng sao một chút
   r:Math.random()*1.5, a:Math.random()*Math.PI*2
 }));
 
@@ -171,7 +163,10 @@ const stars = Array.from({length:800},()=>( {
 ======================= */
 const particles=[];
 for(let i=0;i<1500;i++){
-  const radius = rand(150,600);
+  // [THAY ĐỔI 2] Tăng bán kính sinh hạt để chúng xa hành tinh hơn
+  // Cũ: rand(150, 600) -> Mới: rand(500, 1200)
+  const radius = rand(500, 1000);
+  
   const theta = Math.random() * Math.PI * 2;
   const phi   = Math.acos(rand(-1,1)); 
 
@@ -226,9 +221,11 @@ function draw(){
     if(pr.s <= 0) return;
 
     const displaySize = p.size * pr.s;
-    const imgThreshold = 2.5;
+    const imgThreshold = 2.5; 
     
     let squareAlpha = 1;
+    // Điều chỉnh threshold hiển thị ảnh khi zoom xa
+    // Vì zoom nhỏ (0.4) nên pr.s sẽ nhỏ, ta cần logic hiển thị linh hoạt
     if (pr.s > imgThreshold) {
         squareAlpha = Math.max(0, 1 - (pr.s - imgThreshold));
     }
@@ -296,7 +293,8 @@ function draw(){
 
   /* ===== TEXT ORBIT ===== */
   ctx.fillStyle="#fff";
-  ctx.font=`bold ${20*planet.s}px Arial`;
+  // Tăng font size một chút vì zoom xa sẽ làm chữ bé đi
+  ctx.font=`bold ${30*planet.s}px Arial`; 
   ctx.textAlign="center";
   ctx.textBaseline="middle";
 
