@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Galaxy Love – Square to Image</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:#000;
+}
+canvas{display:block;}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+/* =======================
+   SETUP & RESOURCES
+======================= */
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let w,h,cx,cy;
+
+// Danh sách ảnh
+const imgUrls = [
+  "https://raw.githubusercontent.com/dluongta/React_App_Resume_Page/refs/heads/main/src/assets/luen_logo.png",
+  "https://raw.githubusercontent.com/dluongta/React_App_Resume_Page/refs/heads/main/src/assets/hexagon-main.png",
+  "https://raw.githubusercontent.com/dluongta/React_App_Resume_Page/refs/heads/main/src/assets/luen-1.jpg",
+];
+const images = [];
+
+// Load hình ảnh
+imgUrls.forEach(url => {
+  const img = new Image();
+  img.src = url;
+  images.push(img);
+});
+
+function resize(){
+  w = canvas.width = innerWidth;
+  h = canvas.height = innerHeight;
+  cx = w/2;
+  cy = h/2;
+}
+addEventListener("resize",resize);
+resize();
+
+const rand=(a,b)=>Math.random()*(b-a)+a;
+
+/* =======================
+   CAMERA
+======================= */
+let rotX=0, rotY=0, zoom=1;
+const PERSPECTIVE = 900;
+
+/* =======================
+   INPUT
+======================= */
+addEventListener("wheel",e=>{
+  zoom += e.deltaY * -0.0005;
+  // Cho phép zoom sâu hơn để thấy hiệu ứng chuyển ảnh
+  zoom = Math.max(0.1,Math.min(6,zoom)); 
+});
+
+let dragging=false,px=0,py=0;
+addEventListener("mousedown",e=>{
+  dragging=true; px=e.clientX; py=e.clientY;
+});
+addEventListener("mouseup",()=>dragging=false);
+addEventListener("mousemove",e=>{
+  if(!dragging) return;
+  rotY += (e.clientX-px)*0.003;
+  rotX += (e.clientY-py)*0.003;
+  px=e.clientX; py=e.clientY;
+});
+
+/* =======================
+   3D CORE
+======================= */
+function rotate3D(x,y,z){
+  let y1 = y*Math.cos(rotX) - z*Math.sin(rotX);
+  let z1 = y*Math.sin(rotX) + z*Math.cos(rotX);
+  let x2 = x*Math.cos(rotY) + z1*Math.sin(rotY);
+  let z2 = -x*Math.sin(rotY) + z1*Math.cos(rotY);
+  return {x:x2,y:y1,z:z2};
+}
+
+function project(p){
+  const s = (PERSPECTIVE/(PERSPECTIVE+p.z))*zoom;
+  return {x:cx+p.x*s, y:cy+p.y*s, s, z:p.z};
+}
+
+/* =======================
+   STARS
+======================= */
+const stars = Array.from({length:800},()=>( {
+  x:rand(-w*2,w*2), y:rand(-h*2,h*2), z:rand(-2000,2000),
+  r:Math.random()*1.5, a:Math.random()*Math.PI*2
+}));
+
+/* =======================
+   GALAXY PARTICLES
+======================= */
+const particles=[];
+for(let i=0;i<1500;i++){
+  const radius = rand(150,600);
+  const theta = Math.random() * Math.PI * 2;
+  const phi   = Math.acos(rand(-1,1)); 
+
+  particles.push({
+    x: radius * Math.sin(phi) * Math.cos(theta),
+    y: radius * Math.cos(phi),
+    z: radius * Math.sin(phi) * Math.sin(theta),
+    size: rand(3, 6), // Kích thước hạt cơ bản
+    imgIndex: Math.floor(Math.random() * images.length)
+  });
+}
+
+/* =======================
+   TEXT CONFIG
+======================= */
+const TEXT = "LOVE YOU FOREVER";
+const LETTER_SPACE = 0.35;
+const PLANET_RADIUS = 90;
+
+let time=0;
+
+function draw(){
+  time+=0.003;
+  ctx.clearRect(0,0,w,h);
+
+  /* Background */
+  const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(w,h));
+  bg.addColorStop(0,"#050010");
+  bg.addColorStop(1,"#000");
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,w,h);
+
+  /* Stars */
+  ctx.fillStyle="#fff";
+  stars.forEach(s=>{
+    s.a+=0.02;
+    const p=project(rotate3D(s.x,s.y,s.z));
+    ctx.globalAlpha=0.3+Math.sin(s.a)*0.3;
+    ctx.fillRect(p.x,p.y,s.r*p.s,s.r*p.s);
+  });
+  ctx.globalAlpha=1;
+
+  /* Galaxy Particles */
+  particles.forEach(p=>{
+    const r=rotate3D(
+      p.x*Math.cos(time)-p.z*Math.sin(time),
+      p.y,
+      p.x*Math.sin(time)+p.z*Math.cos(time)
+    );
+    const pr=project(r);
+    
+    // Không vẽ hạt sau camera
+    if(pr.s <= 0) return;
+
+    // Kích thước hiển thị
+    const displaySize = p.size * pr.s;
+
+    // --- 1. Vẽ Hình Vuông Gradient (Xanh - Tím - Hồng) ---
+    // Chỉ vẽ khi chưa phóng quá to (để tránh bị đè lên ảnh hoặc làm nặng máy)
+    // Hoặc vẽ mờ đi khi ảnh xuất hiện
+    
+    // Ngưỡng phóng to để hiện ảnh là 2.5
+    const imgThreshold = 2.5;
+    
+    // Tính độ trong suốt của khối vuông:
+    // Khi pr.s < 2.5: Alpha = 1 (rõ nhất)
+    // Khi pr.s > 2.5: Alpha giảm dần về 0
+    let squareAlpha = 1;
+    if (pr.s > imgThreshold) {
+        squareAlpha = Math.max(0, 1 - (pr.s - imgThreshold));
+    }
+
+    if (squareAlpha > 0) {
+        ctx.save();
+        ctx.globalAlpha = squareAlpha;
+        
+        // Tạo gradient chéo cho hình vuông
+        const grad = ctx.createLinearGradient(
+            pr.x - displaySize/2, 
+            pr.y - displaySize/2, 
+            pr.x + displaySize/2, 
+            pr.y + displaySize/2
+        );
+        grad.addColorStop(0, "#00ffff");   // Xanh Cyan
+        grad.addColorStop(0.5, "#bd00ff"); // Tím
+        grad.addColorStop(1, "#ff0066");   // Hồng
+
+        ctx.fillStyle = grad;
+        
+        // Vẽ hình vuông (fillRect)
+        ctx.fillRect(
+            pr.x - displaySize/2, 
+            pr.y - displaySize/2, 
+            displaySize, 
+            displaySize
+        );
+        ctx.restore();
+    }
+
+    // --- 2. Vẽ Ảnh (Chỉ khi phóng THẬT TO) ---
+    if (pr.s > imgThreshold && images[p.imgIndex].complete) {
+        const imgSize = displaySize * 3; // Ảnh to hơn hạt một chút
+        
+        // Tính độ rõ của ảnh (Fade in)
+        // Từ 2.5 đến 3.5: Ảnh hiện dần từ 0 -> 1
+        let imgAlpha = (pr.s - imgThreshold);
+        imgAlpha = Math.max(0, Math.min(1, imgAlpha)); 
+
+        if(imgAlpha > 0.01) {
+            ctx.save();
+            ctx.globalAlpha = imgAlpha;
+            ctx.drawImage(
+                images[p.imgIndex], 
+                pr.x - imgSize/2, 
+                pr.y - imgSize/2, 
+                imgSize, 
+                imgSize
+            );
+            ctx.restore();
+        }
+    }
+  });
+
+  /* ===== PLANET ===== */
+  const planet3D = rotate3D(0,0,0);
+  const planet = project(planet3D);
+  const planetScreenRadius = PLANET_RADIUS * planet.s;
+
+  const g=ctx.createRadialGradient(
+    planet.x-30*planet.s,
+    planet.y-30*planet.s,
+    20*planet.s,
+    planet.x,
+    planet.y,
+    planetScreenRadius
+  );
+  g.addColorStop(0,"#ffd1ff");
+  g.addColorStop(0.5,"#ff8ad4");
+  g.addColorStop(1,"#C77DFF");
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.arc(planet.x,planet.y,planetScreenRadius,0,Math.PI*2);
+  ctx.fill();
+
+
+  /* ===== TEXT ORBIT ===== */
+  ctx.fillStyle="#fff";
+  ctx.font=`bold ${20*planet.s}px Arial`;
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+
+  for(let i=0;i<TEXT.length;i++){
+    const a=time*2+i*LETTER_SPACE;
+    const letter3D = rotate3D(
+      Math.cos(a)*220,
+      Math.sin(a)*80,
+      0
+    );
+    const letter = project(letter3D);
+
+    const dx = letter.x - planet.x;
+    const dy = letter.y - planet.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const behindPlanet = dist < planetScreenRadius && letter.z > planet.z;
+
+    if(behindPlanet) continue;
+    ctx.fillText(TEXT[i], letter.x, letter.y);
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>
