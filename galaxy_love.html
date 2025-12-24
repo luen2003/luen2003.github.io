@@ -163,18 +163,23 @@ const stars = Array.from({length:800},()=>( {
 ======================= */
 const particles=[];
 for(let i=0;i<1500;i++){
-  // [THAY ĐỔI 2] Tăng bán kính sinh hạt để chúng xa hành tinh hơn
-  // Cũ: rand(150, 600) -> Mới: rand(500, 1200)
-  const radius = rand(500, 1000);
+  // [CHỈNH SỬA TẠI ĐÂY]
+  // Planet bán kính ~90, Chữ bay ở ~220
+  // Đặt min = 350 để cách xa trung tâm và chữ
+  // Đặt max = 550 để gom chúng lại thành 1 vùng, không bay quá xa khung nhìn
+  const minR = 350;
+  const maxR = 550;
+  const radius = rand(minR, maxR);
   
-  const theta = Math.random() * Math.PI * 2;
-  const phi   = Math.acos(rand(-1,1)); 
-
+  const theta = Math.random() * Math.PI * 2; // Góc xoay vòng quanh
+  const phi   = Math.acos(rand(-1,1));       // Góc phân bố cầu
+// Thay dòng phi cũ bằng dòng này để ép các hạt nằm ngang nhiều hơn:
+//const phi = Math.acos(rand(-0.4, 0.4)) + Math.PI/2;
   particles.push({
     x: radius * Math.sin(phi) * Math.cos(theta),
     y: radius * Math.cos(phi),
     z: radius * Math.sin(phi) * Math.sin(theta),
-    size: rand(3, 6),
+    size: rand(3, 6), // Kích thước hạt
     imgIndex: Math.floor(Math.random() * images.length)
   });
 }
