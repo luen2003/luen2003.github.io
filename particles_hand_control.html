@@ -38,6 +38,90 @@
             width: 260px;
         }
 
+        /* =====================================
+       THIẾT LẬP CHO MOBILE (MÀN HÌNH NHỎ)
+       ===================================== */
+        @media (max-width: 768px) {
+            #ui-panel {
+                top: auto;
+                bottom: 0;
+                /* Đưa xuống đáy */
+                left: 0;
+                width: 100%;
+                /* Tràn màn hình */
+                border-radius: 20px 20px 0 0;
+                /* Bo góc trên */
+                padding: 10px;
+                display: flex;
+                flex-direction: row;
+                /* Dàn hàng ngang */
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                box-sizing: border-box;
+            }
+
+            h2 {
+                display: none;
+            }
+
+            /* Ẩn tiêu đề để đỡ chật */
+
+            .status-box {
+                margin-bottom: 0;
+                min-height: auto;
+                padding: 5px 10px;
+                flex-direction: row;
+                /* Icon và text nằm cạnh nhau */
+                gap: 8px;
+                background: none;
+                border: none;
+            }
+
+            #gesture-icon {
+                font-size: 24px;
+                margin-bottom: 0;
+            }
+
+            #status-text {
+                font-size: 12px;
+            }
+
+            .guide {
+                display: flex;
+                flex-direction: row;
+                /* Dàn các nhóm hướng dẫn nằm ngang */
+                gap: 15px;
+                font-size: 10px;
+            }
+
+            .guide-group {
+                margin-top: 0;
+                border-top: none;
+                padding-top: 0;
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                /* Ngăn cách bằng vạch dọc */
+                padding-left: 10px;
+            }
+
+            .guide-title {
+                font-size: 9px;
+                margin-bottom: 2px;
+            }
+
+            .guide-item span {
+                white-space: nowrap;
+            }
+
+            /* Đẩy camera lên trên bảng điều khiển để không chồng lấn */
+            #camera-feed {
+                width: 100px;
+                height: 75px;
+                top: 15px;
+                right: 10px;
+            }
+        }
+
         h2 {
             margin: 0 0 15px 0;
             font-size: 16px;
@@ -137,7 +221,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 
@@ -305,7 +390,7 @@
                 // 1 Ngón trỏ -> Khối lập phương TÍM (Thay thế lăng trụ và xóa Rock)
                 else if (indexUp && !middleUp && !ringUp && !pinkyUp) {
                     newMode = "morph"; newTargetShape = shapes.cube;
-                    detectedIcon = "☝️💜"; detectedName = "Khối Lập Phương"; detectedColor = 0xbf00ff; // Màu Tím
+                    detectedIcon = "☝️🟪"; detectedName = "Khối Lập Phương"; detectedColor = 0xbf00ff; // Màu Tím
                 }
 
                 if (newMode === "expand") {
@@ -364,4 +449,5 @@
         });
     </script>
 </body>
+
 </html>
