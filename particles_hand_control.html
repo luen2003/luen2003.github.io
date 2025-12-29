@@ -38,191 +38,63 @@
             width: 260px;
         }
 
-        /* =====================================
-       THIẾT LẬP CHO MOBILE (MÀN HÌNH NHỎ)
-       ===================================== */
+        /* MOBILE SETUP */
         @media (max-width: 768px) {
             #ui-panel {
-                top: auto;
-                bottom: 0;
-                /* Đưa xuống đáy */
-                left: 0;
-                width: 100%;
-                /* Tràn màn hình */
-                border-radius: 20px 20px 0 0;
-                /* Bo góc trên */
-                padding: 10px;
-                display: flex;
-                flex-direction: row;
-                /* Dàn hàng ngang */
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                box-sizing: border-box;
+                top: auto; bottom: 0; left: 0; width: 100%;
+                border-radius: 20px 20px 0 0; padding: 10px;
+                display: flex; flex-direction: row; align-items: center;
+                justify-content: space-between; gap: 10px; box-sizing: border-box;
             }
-
-            h2 {
-                display: none;
-            }
-
-            /* Ẩn tiêu đề để đỡ chật */
-
+            h2 { display: none; }
             .status-box {
-                margin-bottom: 0;
-                min-height: auto;
-                padding: 5px 10px;
-                flex-direction: row;
-                /* Icon và text nằm cạnh nhau */
-                gap: 8px;
-                background: none;
-                border: none;
+                margin-bottom: 0; min-height: auto; padding: 5px 10px;
+                flex-direction: row; gap: 8px; background: none; border: none;
             }
-
-            #gesture-icon {
-                font-size: 24px;
-                margin-bottom: 0;
-            }
-
-            #status-text {
-                font-size: 12px;
-            }
-
-            .guide {
-                display: flex;
-                flex-direction: row;
-                /* Dàn các nhóm hướng dẫn nằm ngang */
-                gap: 15px;
-                font-size: 10px;
-            }
-
-            .guide-group {
-                margin-top: 0;
-                border-top: none;
-                padding-top: 0;
-                border-left: 1px solid rgba(255, 255, 255, 0.1);
-                /* Ngăn cách bằng vạch dọc */
-                padding-left: 10px;
-            }
-
-            .guide-title {
-                font-size: 9px;
-                margin-bottom: 2px;
-            }
-
-            .guide-item span {
-                white-space: nowrap;
-            }
-
-            /* Đẩy camera lên trên bảng điều khiển để không chồng lấn */
-            #camera-feed {
-                width: 100px;
-                height: 75px;
-                top: 15px;
-                right: 10px;
-            }
+            #gesture-icon { font-size: 24px; margin-bottom: 0; }
+            #status-text { font-size: 12px; }
+            .guide { display: flex; flex-direction: row; gap: 15px; font-size: 10px; }
+            .guide-group { margin-top: 0; border-top: none; padding-top: 0; border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 10px; }
+            .guide-title { font-size: 9px; margin-bottom: 2px; }
+            .guide-item span { white-space: nowrap; }
+            #camera-feed { width: 100px; height: 75px; top: 15px; right: 10px; }
         }
 
         h2 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            text-align: center;
-            color: #00d2ff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+            margin: 0 0 15px 0; font-size: 16px; text-align: center; color: #00d2ff;
+            text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
         }
 
         .status-box {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            background: rgba(0, 0, 0, 0.4); border-radius: 8px; padding: 15px;
+            text-align: center; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: 80px; display: flex; flex-direction: column; justify-content: center;
         }
 
-        #gesture-icon {
-            font-size: 42px;
-            display: block;
-            margin-bottom: 8px;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-        }
+        #gesture-icon { font-size: 42px; display: block; margin-bottom: 8px; text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+        #status-text { font-size: 16px; font-weight: 700; color: #fff; }
 
-        #status-text {
-            font-size: 16px;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .guide {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 6px;
-            font-size: 13px;
-            color: #aaa;
-        }
-
-        .guide-group {
-            margin-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 10px;
-        }
-
-        .guide-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #666;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .guide-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .guide { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 13px; color: #aaa; }
+        .guide-group { margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 10px; }
+        .guide-title { font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 5px; font-weight: bold; }
+        .guide-item { display: flex; align-items: center; gap: 10px; }
 
         #camera-feed {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 180px;
-            height: 135px;
-            z-index: 100;
-            border-radius: 12px;
-            border: 2px solid rgba(0, 210, 255, 0.2);
-            overflow: hidden;
-            background: black;
-            opacity: 1;
+            position: absolute; bottom: 20px; right: 20px; width: 180px; height: 135px;
+            z-index: 100; border-radius: 12px; border: 2px solid rgba(0, 210, 255, 0.2);
+            overflow: hidden; background: black; opacity: 1;
         }
-
-        .input_video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
+        .input_video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
         .loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #00d2ff;
-            z-index: 20;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #00d2ff; z-index: 20; font-family: 'Courier New', monospace; font-weight: bold;
         }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 
@@ -240,13 +112,14 @@
             <div class="guide-group">
                 <div class="guide-title">Điều khiển</div>
                 <div class="guide-item"><span>✊ Nắm: Hình cầu</span></div>
-                <div class="guide-item"><span>🖐 Mở: Bung hạt</span></div>
+                <div class="guide-item"><span>🖐 5 Ngón: Bung hạt</span></div>
             </div>
             <div class="guide-group">
                 <div class="guide-title">Biến hình</div>
-                <div class="guide-item"><span>☝️ 1 Ngón: Khối Lập Phương (Tím)</span></div>
-                <div class="guide-item"><span>✌️ 2 Ngón: Trái Tim Ngược</span></div>
-                <div class="guide-item"><span>👌 OK: Ngôi sao</span></div>
+                <div class="guide-item"><span>☝️ 1 Ngón: Khối Lập Phương</span></div>
+                <div class="guide-item"><span>✌️ 2 Ngón: Trái Tim</span></div>
+                <div class="guide-item"><span>3️⃣ 3 Ngón: Ngôi Sao</span></div>
+                <div class="guide-item"><span>👌 OK: Khối Lăng Trụ</span></div>
             </div>
         </div>
     </div>
@@ -276,7 +149,8 @@
             baseSphere: [],
             heart: [],
             cube: [],
-            star: []
+            star: [],
+            prism: [] 
         };
 
         const rand = (min, max) => Math.random() * (max - min) + min;
@@ -295,7 +169,7 @@
             currentPositions[i * 3 + 2] = z;
         }
 
-        // Heart (Upward)
+        // Heart
         for (let i = 0; i < particleCount; i++) {
             const t = rand(0, Math.PI * 2);
             const u = rand(0, Math.PI);
@@ -306,7 +180,7 @@
             shapes.heart.push(x * scale, y * scale, z * scale);
         }
 
-        // Purple Cube (Surface)
+        // Cube
         for (let i = 0; i < particleCount; i++) {
             const size = 18;
             const face = Math.floor(rand(0, 6));
@@ -324,18 +198,61 @@
 
         // Star
         for (let i = 0; i < particleCount; i++) {
-            const outerRadius = 25, innerRadius = 10, numPoints = 5;
+            const outerRadius = 25, innerRadius = 10;
+            const numPoints = 5;
             const totalVertices = numPoints * 2;
             const step = Math.PI * 2 / totalVertices;
-            const rotationOffset = -Math.PI / 2 + 120;
-            const v = Math.floor(rand(0, totalVertices));
-            const angleA = v * step + rotationOffset, angleB = (v + 1) * step + rotationOffset;
+            const rotationOffset = -Math.PI / 2 + 120; 
+            const v = Math.floor(rand(0, totalVertices)); 
+            const angleA = v * step + rotationOffset;
+            const angleB = (v + 1) * step + rotationOffset;
             const rA = (v % 2 === 0) ? outerRadius : innerRadius;
             const rB = (v % 2 === 0) ? innerRadius : outerRadius;
-            const x1 = rA * Math.cos(angleA), y1 = rA * Math.sin(angleA);
-            const x2 = rB * Math.cos(angleB), y2 = rB * Math.sin(angleB);
+            
             const t = Math.random();
+            const x1 = rA * Math.cos(angleA);
+            const y1 = rA * Math.sin(angleA);
+            const x2 = rB * Math.cos(angleB);
+            const y2 = rB * Math.sin(angleB);
+
             shapes.star.push(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, rand(-2, 2));
+        }
+
+        // Triangular Prism
+        for (let i = 0; i < particleCount; i++) {
+            const radius = 20;
+            const height = 30; 
+            const side = Math.floor(rand(0, 5)); 
+            
+            let x, y, z;
+            const a1 = 0, a2 = 2 * Math.PI / 3, a3 = 4 * Math.PI / 3;
+            
+            if (side < 3) {
+                const h = rand(-height/2, height/2);
+                const t = Math.random();
+                let ang1, ang2;
+                if(side === 0) { ang1 = a1; ang2 = a2; }
+                else if(side === 1) { ang1 = a2; ang2 = a3; }
+                else { ang1 = a3; ang2 = a1; }
+
+                const x1 = radius * Math.cos(ang1), z1 = radius * Math.sin(ang1);
+                const x2 = radius * Math.cos(ang2), z2 = radius * Math.sin(ang2);
+                
+                x = x1 + (x2 - x1) * t;
+                z = z1 + (z2 - z1) * t;
+                y = h;
+            } else {
+                let r1 = Math.random(), r2 = Math.random();
+                if (r1 + r2 > 1) { r1 = 1 - r1; r2 = 1 - r2; }
+                const x1 = radius * Math.cos(a1), z1 = radius * Math.sin(a1);
+                const x2 = radius * Math.cos(a2), z2 = radius * Math.sin(a2);
+                const x3 = radius * Math.cos(a3), z3 = radius * Math.sin(a3);
+
+                x = x1 + (x2 - x1) * r1 + (x3 - x1) * r2;
+                z = z1 + (z2 - z1) * r1 + (z3 - z1) * r2;
+                y = (side === 3) ? height/2 : -height/2;
+            }
+            shapes.prism.push(x, y, z);
         }
 
         geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
@@ -372,30 +289,47 @@
                 const lm = results.multiHandLandmarks[0];
                 const isFingerUp = (tip, pip) => Math.hypot(lm[tip].x - lm[0].x, lm[tip].y - lm[0].y) > Math.hypot(lm[pip].x - lm[0].x, lm[pip].y - lm[0].y);
 
-                const thumbUp = isFingerUp(4, 3), indexUp = isFingerUp(8, 6), middleUp = isFingerUp(12, 10), ringUp = isFingerUp(16, 14), pinkyUp = isFingerUp(20, 18);
+                const thumbUp = isFingerUp(4, 3);
+                const indexUp = isFingerUp(8, 6);
+                const middleUp = isFingerUp(12, 10);
+                const ringUp = isFingerUp(16, 14);
+                const pinkyUp = isFingerUp(20, 18);
+                
                 const fingersUpCount = [indexUp, middleUp, ringUp, pinkyUp].filter(Boolean).length + (thumbUp ? 1 : 0);
 
                 let newMode = "expand", newTargetShape = null, detectedIcon = "", detectedName = "", detectedColor = 0x00d2ff;
 
+                // Tính khoảng cách giữa đầu ngón cái (4) và đầu ngón trỏ (8) cho cử chỉ OK
+                const pinchDistance = Math.hypot(lm[8].x - lm[4].x, lm[8].y - lm[4].y);
+                const isOkGesture = pinchDistance < 0.05 && middleUp && ringUp && pinkyUp;
+
+                // --- LOGIC NHẬN DIỆN CỬ CHỈ ---
+
                 // 2 Ngón -> Trái tim
                 if (indexUp && middleUp && !ringUp && !pinkyUp) {
                     newMode = "morph"; newTargetShape = shapes.heart;
-                    detectedIcon = "✌️❤️"; detectedName = "Trái Tim Ngược"; detectedColor = 0xff0055;
+                    detectedIcon = "✌️❤️"; detectedName = "Trái Tim"; detectedColor = 0xff0055;
                 }
-                // OK Sign -> Ngôi sao
-                else if (Math.abs(lm[8].x - lm[4].x) < 0.08 && Math.abs(lm[8].y - lm[4].y) < 0.08 && middleUp && ringUp) {
+                // 3 Ngón -> Ngôi sao
+                else if (indexUp && middleUp && ringUp && !pinkyUp) {
                     newMode = "morph"; newTargetShape = shapes.star;
-                    detectedIcon = "👌⭐"; detectedName = "Ngôi Sao"; detectedColor = 0xffff00;
+                    detectedIcon = "3️⃣⭐"; detectedName = "Ngôi Sao"; detectedColor = 0xffff00;
                 }
-                // 1 Ngón trỏ -> Khối lập phương TÍM (Thay thế lăng trụ và xóa Rock)
+                // OK Gesture -> LĂNG TRỤ CAM
+                else if (isOkGesture) {
+                    newMode = "morph"; newTargetShape = shapes.prism;
+                    detectedIcon = "👌🔶"; detectedName = "OK! Lăng Trụ"; detectedColor = 0xff6600; 
+                }
+                // 1 Ngón trỏ -> Khối lập phương
                 else if (indexUp && !middleUp && !ringUp && !pinkyUp) {
                     newMode = "morph"; newTargetShape = shapes.cube;
-                    detectedIcon = "☝️🟪"; detectedName = "Khối Lập Phương"; detectedColor = 0xbf00ff; // Màu Tím
+                    detectedIcon = "☝️🟪"; detectedName = "Khối Lập Phương"; detectedColor = 0xbf00ff;
                 }
 
+                // Xử lý chế độ
                 if (newMode === "expand") {
                     currentMode = "expand"; targetShapeArray = null;
-                    if (fingersUpCount >= 4) {
+                    if (fingersUpCount === 5) {
                         targetExpansion = 6.0; statusIcon.innerText = "🖐💥"; statusText.innerText = "Bung Hạt"; material.color.setHex(0x0066ff);
                     } else {
                         targetExpansion = 1.0; statusIcon.innerText = "✊🌐"; statusText.innerText = "Hình Cầu"; material.color.setHex(0x0066ff);
