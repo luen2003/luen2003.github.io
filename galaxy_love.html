@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Galaxy Love</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:#000;
+  touch-action: none; 
+}
+canvas{display:block;}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+/* =======================
+   SETUP & RESOURCES
+======================= */
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let w,h,cx,cy;
+
+// Danh sách ảnh
+const imgUrls = [
+  "luen_logo.png",
+  "hexagon-main.png",
+  "luen-1.jpg",
+];
+const images = [];
+
+// Load hình ảnh
+imgUrls.forEach(url => {
+  const img = new Image();
+  img.src = url;
+  images.push(img);
+});
+
+function resize(){
+  w = canvas.width = innerWidth;
+  h = canvas.height = innerHeight;
+  cx = w/2;
+  cy = h/2;
+}
+addEventListener("resize",resize);
+resize();
+
+const rand=(a,b)=>Math.random()*(b-a)+a;
+
+/* =======================
+   CAMERA
+======================= */
+let rotX=0, rotY=0;
+// [THAY ĐỔI 1] Chỉnh zoom ban đầu nhỏ lại (0.4) để camera ở xa hơn
+let zoom=0.4; 
+const PERSPECTIVE = 900;
+
+/* =======================
+   INPUT (PC - MOUSE/WHEEL)
+======================= */
+addEventListener("wheel",e=>{
+  zoom += e.deltaY * -0.0005;
+  zoom = Math.max(0.1,Math.min(6,zoom)); 
+});
+
+let dragging=false,px=0,py=0;
+addEventListener("mousedown",e=>{
+  dragging=true; px=e.clientX; py=e.clientY;
+});
+addEventListener("mouseup",()=>dragging=false);
+addEventListener("mousemove",e=>{
+  if(!dragging) return;
+  rotY += (e.clientX-px)*0.003;
+  rotX += (e.clientY-py)*0.003;
+  px=e.clientX; py=e.clientY;
+});
+
+/* =======================
+   INPUT (MOBILE - TOUCH)
+======================= */
+let lastTouchX = 0;
+let lastTouchY = 0;
+let initialPinchDistance = null;
+
+function getDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+canvas.addEventListener("touchstart", e => {
+    if (e.touches.length === 1) {
+        dragging = true;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+        dragging = false;
+        initialPinchDistance = getDistance(e.touches);
+    }
+}, { passive: false });
+
+canvas.addEventListener("touchmove", e => {
+    e.preventDefault(); 
+    if (e.touches.length === 1 && dragging) {
+        const x = e.touches[0].clientX;
+        const y = e.touches[0].clientY;
+        const dx = x - lastTouchX;
+        const dy = y - lastTouchY;
+        
+        rotY += dx * 0.005; 
+        rotX += dy * 0.005;
+        
+        lastTouchX = x;
+        lastTouchY = y;
+    } else if (e.touches.length === 2) {
+        const currentDistance = getDistance(e.touches);
+        if (initialPinchDistance) {
+            const diff = currentDistance - initialPinchDistance;
+            zoom += diff * 0.005; 
+            zoom = Math.max(0.1, Math.min(6, zoom));
+            initialPinchDistance = currentDistance;
+        }
+    }
+}, { passive: false });
+
+canvas.addEventListener("touchend", () => {
+    dragging = false;
+    initialPinchDistance = null;
+});
+
+/* =======================
+   3D CORE
+======================= */
+function rotate3D(x,y,z){
+  let y1 = y*Math.cos(rotX) - z*Math.sin(rotX);
+  let z1 = y*Math.sin(rotX) + z*Math.cos(rotX);
+  let x2 = x*Math.cos(rotY) + z1*Math.sin(rotY);
+  let z2 = -x*Math.sin(rotY) + z1*Math.cos(rotY);
+  return {x:x2,y:y1,z:z2};
+}
+
+function project(p){
+  const s = (PERSPECTIVE/(PERSPECTIVE+p.z))*zoom;
+  return {x:cx+p.x*s, y:cy+p.y*s, s, z:p.z};
+}
+
+/* =======================
+   STARS
+======================= */
+const stars = Array.from({length:800},()=>( {
+  x:rand(-w*3,w*3), y:rand(-h*3,h*3), z:rand(-3000,3000), // Mở rộng vùng sao một chút
+  r:Math.random()*1.5, a:Math.random()*Math.PI*2
+}));
+
+/* =======================
+   GALAXY PARTICLES
+======================= */
+const particles=[];
+for(let i=0;i<1500;i++){
+  // [CHỈNH SỬA TẠI ĐÂY]
+  // Planet bán kính ~90, Chữ bay ở ~220
+  // Đặt min = 350 để cách xa trung tâm và chữ
+  // Đặt max = 550 để gom chúng lại thành 1 vùng, không bay quá xa khung nhìn
+  const minR = 350;
+  const maxR = 550;
+  const radius = rand(minR, maxR);
+  
+  const theta = Math.random() * Math.PI * 2; // Góc xoay vòng quanh
+  const phi   = Math.acos(rand(-1,1));       // Góc phân bố cầu
+// Thay dòng phi cũ bằng dòng này để ép các hạt nằm ngang nhiều hơn:
+//const phi = Math.acos(rand(-0.4, 0.4)) + Math.PI/2;
+  particles.push({
+    x: radius * Math.sin(phi) * Math.cos(theta),
+    y: radius * Math.cos(phi),
+    z: radius * Math.sin(phi) * Math.sin(theta),
+    size: rand(3, 6), // Kích thước hạt
+    imgIndex: Math.floor(Math.random() * images.length)
+  });
+}
+
+/* =======================
+   TEXT CONFIG
+======================= */
+const TEXT = "LOVE YOU FOREVER";
+const LETTER_SPACE = 0.35;
+const PLANET_RADIUS = 90;
+
+let time=0;
+
+function draw(){
+  time+=0.003;
+  ctx.clearRect(0,0,w,h);
+
+  /* Background */
+  const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(w,h));
+  bg.addColorStop(0,"#050010");
+  bg.addColorStop(1,"#000");
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,w,h);
+
+  /* Stars */
+  ctx.fillStyle="#fff";
+  stars.forEach(s=>{
+    s.a+=0.02;
+    const p=project(rotate3D(s.x,s.y,s.z));
+    ctx.globalAlpha=0.3+Math.sin(s.a)*0.3;
+    ctx.fillRect(p.x,p.y,s.r*p.s,s.r*p.s);
+  });
+  ctx.globalAlpha=1;
+
+  /* Galaxy Particles */
+  particles.forEach(p=>{
+    const r=rotate3D(
+      p.x*Math.cos(time)-p.z*Math.sin(time),
+      p.y,
+      p.x*Math.sin(time)+p.z*Math.cos(time)
+    );
+    const pr=project(r);
+    
+    if(pr.s <= 0) return;
+
+    const displaySize = p.size * pr.s;
+    const imgThreshold = 2.5; 
+    
+    let squareAlpha = 1;
+    // Điều chỉnh threshold hiển thị ảnh khi zoom xa
+    // Vì zoom nhỏ (0.4) nên pr.s sẽ nhỏ, ta cần logic hiển thị linh hoạt
+    if (pr.s > imgThreshold) {
+        squareAlpha = Math.max(0, 1 - (pr.s - imgThreshold));
+    }
+
+    if (squareAlpha > 0) {
+        ctx.save();
+        ctx.globalAlpha = squareAlpha;
+        const grad = ctx.createLinearGradient(
+            pr.x - displaySize/2, pr.y - displaySize/2, 
+            pr.x + displaySize/2, pr.y + displaySize/2
+        );
+        grad.addColorStop(0, "#00ffff");
+        grad.addColorStop(0.5, "#bd00ff");
+        grad.addColorStop(1, "#ff0066");
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(
+            pr.x - displaySize/2, pr.y - displaySize/2, 
+            displaySize, displaySize
+        );
+        ctx.restore();
+    }
+
+    /* Vẽ Ảnh */
+    if (pr.s > imgThreshold && images[p.imgIndex].complete) {
+        const imgSize = displaySize * 3;
+        let imgAlpha = (pr.s - imgThreshold);
+        imgAlpha = Math.max(0, Math.min(1, imgAlpha)); 
+
+        if(imgAlpha > 0.01) {
+            ctx.save();
+            ctx.globalAlpha = imgAlpha;
+            ctx.drawImage(
+                images[p.imgIndex], 
+                pr.x - imgSize/2, 
+                pr.y - imgSize/2, 
+                imgSize, imgSize
+            );
+            ctx.restore();
+        }
+    }
+  });
+
+  /* ===== PLANET ===== */
+  const planet3D = rotate3D(0,0,0);
+  const planet = project(planet3D);
+  const planetScreenRadius = PLANET_RADIUS * planet.s;
+
+  const g=ctx.createRadialGradient(
+    planet.x-30*planet.s,
+    planet.y-30*planet.s,
+    20*planet.s,
+    planet.x,
+    planet.y,
+    planetScreenRadius
+  );
+  g.addColorStop(0,"#ffd1ff");
+  g.addColorStop(0.5,"#ff8ad4");
+  g.addColorStop(1,"#C77DFF");
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.arc(planet.x,planet.y,planetScreenRadius,0,Math.PI*2);
+  ctx.fill();
+
+
+  /* ===== TEXT ORBIT ===== */
+  ctx.fillStyle="#fff";
+  // Tăng font size một chút vì zoom xa sẽ làm chữ bé đi
+  ctx.font=`bold ${30*planet.s}px Arial`; 
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+
+  for(let i=0;i<TEXT.length;i++){
+    const a=time*2+i*LETTER_SPACE;
+    const letter3D = rotate3D(
+      Math.cos(a)*220,
+      Math.sin(a)*80,
+      0
+    );
+    const letter = project(letter3D);
+
+    const dx = letter.x - planet.x;
+    const dy = letter.y - planet.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const behindPlanet = dist < planetScreenRadius && letter.z > planet.z;
+
+    if(behindPlanet) continue;
+    ctx.fillText(TEXT[i], letter.x, letter.y);
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>
